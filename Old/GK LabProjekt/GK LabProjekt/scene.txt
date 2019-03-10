@@ -1,4 +1,4 @@
-dimensions 1200 1200
+dimensions 500 500
 background 0.3 0.3 0.3
 global 0.1 0.1 0.1
 sphere 0.7   3.0    0.0  -5.0      0.8 0.2 0.0  0.7 1.0 0.0  0.2 0.1 0.2  40

@@ -34,8 +34,8 @@ Vector Reflect(const Point& p, const Point& q, const Vector& d, const Vector& n)
 Point viewer_v{ 0.0, 0.0, 1.0 }; // wektor kierunku obserwacji
 /*************************************************************************************/
 // Rozmiar obrazu w pikselach (obraz jest kwadratem)
-int im_size_x = 1000;
-int im_size_y = 1000; //Nadpisywane wczytaniem z pliku
+int im_size_x = 500;
+int im_size_y = 500; //Nadpisywane wczytaniem z pliku
 /*************************************************************************************/
 // Rozmiar okna obserwatora
 float viewport_size = 15.0;
