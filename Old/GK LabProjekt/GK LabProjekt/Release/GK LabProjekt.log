@@ -1,8 +1,0 @@
-﻿  Main.cpp
-c:\users\piter\desktop\raytracing\old\gk labprojekt\gk labprojekt\main.cpp(200): warning C4390: ';': empty controlled statement found; is this the intent?
-  Generating code
-  0 of 298 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  GK LabProjekt.vcxproj -> C:\Users\Piter\Desktop\RayTracing\Old\GK LabProjekt\Release\GK LabProjekt.exe
