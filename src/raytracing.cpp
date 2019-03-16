@@ -4,14 +4,12 @@
 #include <string>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
-#include "ArashPatrow/bitmap_image.hpp"
-#include "Utilities.h"
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 #include <fstream>
-//#include "Utilities.h"
-//#include <vector>
+//#include "ArashPatrow/bitmap_image.hpp"
+#include "Utilities.h"
 
 const int bytesPerPixel = 3; /// red, green, blue
 const int fileHeaderSize = 14;
@@ -27,23 +25,23 @@ double dotProduct(const Point& p1, const Point& p2);
 Vector Normalization(const Point& p);
 Vector Reflect(const Point& p, const Point& q, const Vector& d, const Vector& n);
 Point viewer_v{0.0, 0.0, 1.0}; // wektor kierunku obserwacji
-int im_size_x = 2500;
-int im_size_y = 2500; // Nadpisywane wczytaniem z pliku
+int im_size_x = 1000;
+int im_size_y = 1000; // Nadpisywane wczytaniem z pliku
 
-const int height = 2500;
-const int width = 2500;
+const int height = 1000;
+const int width = 1000;
 std::array<std::array<std::array<unsigned char, bytesPerPixel>, width>, height> image;
 
 float viewport_size = 15.0;
 LightSource light_source{3.0, 2.5, 5.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
 Sphere sphere{1.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.6, 0.7, 0.8, 1.0, 1.0, 1.0, 30.0};
 Color global;
-float starting_point[3];                        // punkt, z którego wychodzi promieñ
-float starting_directions[] = {0.0, 0.0, -1.0}; // wektor opisuj¹cy kierunek promienia
-float inter[3];                                 // wspó³rzêdne (x,y,z) punktu przeciêcia promienia i sfery
-int inters;                                     // zmienna okreœlaj¹ca, czy sfera zosta³a przeciêta przez
-float inters_c[3];                              // sk³adowe koloru dla oœwietlonego punktu na powierzchni sfery
-unsigned char pixel[1][1][3];                   // sk³adowe koloru rysowanego piksela
+float starting_point[3];
+float starting_directions[] = {0.0, 0.0, -1.0};
+float inter[3];
+int inters;
+float inters_c[3];
+unsigned char pixel[1][1][3];
 
 const int MAX_STEPS = 3;
 
@@ -256,19 +254,17 @@ double dotProduct(const Point& p1, const Point& p2) {
 }
 
 void Display2(void) {
-    int x, y;         // pozycja rysowanego piksela "ca³kowitoliczbowa"
-    float x_fl, y_fl; // pozycja rysowanego piksela "zmiennoprzecinkowa"
-    int im_size_2_x;  // po³owa rozmiaru obrazu w pikselach
+    int x, y;
+    float x_fl, y_fl;
+    int im_size_2_x;
     int im_size_2_y;
-    im_size_2_x = im_size_x / 2; // obliczenie po³owy rozmiaru obrazu w pikselach
+    im_size_2_x = im_size_x / 2;
     im_size_2_y = im_size_y / 2;
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // glFlush();
+
     Point starting_point2;
     Vector starting_directions2{0, 0, -1};
     Color pixel_to_paint;
 
-    // rysowanie pikseli od lewego górnego naro¿nika do prawego dolnego naro¿nika
     for(y = im_size_2_y; y > -im_size_2_y; y--) {
         for(x = -im_size_2_x; x < im_size_2_x; x++) {
             // std::cout << "X: " << x << "\t\tY: " << y << std::endl;
@@ -277,15 +273,10 @@ void Display2(void) {
             // std::cout << "X: " << x_fl << "\t\tY: " << y_fl << std::endl;
 
             int skonwertowany_x, skonwertowany_y;
-            // przeliczenie pozycji(x,y) w pikselach na pozycjê "zmiennoprzecinkow¹" w oknie obserwatora
             starting_point2.x = x_fl;
             starting_point2.y = y_fl;
             starting_point2.z = viewport_size;
-            // wyznaczenie pocz¹tku œledzonego promienia dla rysowanego piksela
             pixel_to_paint = Trace2(starting_point2, starting_directions2);
-            // obliczenie punktu przeciêcia ze sfer¹
-            // glRasterPos3f(x_fl, y_fl, 0);
-            // inkrementacja pozycji rastrowej dla rysowania piksela
 
             skonwertowany_x = x + im_size_2_x;
             skonwertowany_y = y + im_size_2_y - 1;
@@ -309,144 +300,13 @@ void Display2(void) {
             image[skonwertowany_x][skonwertowany_y][0] = pixel[0][0][2];
             image[skonwertowany_x][skonwertowany_y][1] = pixel[0][0][1];
             image[skonwertowany_x][skonwertowany_y][2] = pixel[0][0][0];
-            // glDrawPixels(1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
-            // narysowanie kolejnego piksela na ekranie
-            // glFlush();
         }
     }
 }
 
-// void Myinit(void) {
-//    glMatrixMode(GL_PROJECTION);
-//    glLoadIdentity();
-//    glOrtho(-viewport_size / 2, viewport_size / 2, -viewport_size / 2, viewport_size / 2, -viewport_size / 2, viewport_size / 2);
-//    glMatrixMode(GL_MODELVIEW);
-//}
-
-// int main(void) {
-//    readFile("scene.txt");
-//    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
-//    glutInitWindowSize(im_size_x, im_size_y);
-//    glutCreateWindow("Ray Casting 2000");
-//    Myinit();
-//    glutDisplayFunc(Display2);
-//    glutMainLoop();
-//    return 0;
-//}
-
-void print_help() {
-    std::cout << "\nRayTracing Application help:\n\n"
-              << "\n\t\t--in-progress--\n\n";
-}
-
-// Reader::Parameters process_input(int args, char* params[]) {
-//    Reader::Parameters output_parameters;
-//
-//    std::string solving_mode = "";
-//    std::string output_mode = "";
-//
-//    boost::program_options::options_description desc("Options");
-//    desc.add_options()
-//        ("help,h", "Print help messages")
-//        ("mode,m", boost::program_options::value<std::string>(&solving_mode), "Choose solving mode")
-//        ("benchmark,b", boost::program_options::value<std::size_t>(&output_parameters.benchmark_repetitions), "Benchmark mode")
-//        ("output,o", boost::program_options::value<std::string>(&output_mode), "Output mode")
-//        ("iterations,i", boost::program_options::value<std::size_t>(&output_parameters.algorithm_iterations), "Iterations for tabu search or genetic algorithm")
-//        ("diversification,d", "Enables diversification for tabu search")
-//        ("seed,s", boost::program_options::value<std::size_t>(&output_parameters.seed), "Seed for random number generator")
-//        ("tabu_list,l", boost::program_options::value<std::size_t>(&output_parameters.tabu_list_size), "Tabu list size")
-//		("population,p", boost::program_options::value<std::size_t>(&output_parameters.population_size), "Population size for genetic algorithm")
-//        ("time,t", boost::program_options::value<double>(&output_parameters.time), "Time constraint for tabu search or genetic algorithm")
-//        ("crossing,c", boost::program_options::value<double>(&output_parameters.crossing_chance), "Crossing chance for genetic algorithm")
-//        ("mutation,n", boost::program_options::value<double>(&output_parameters.mutation_chance), "Mutation chance for genetic algorithm")
-//        ("file", boost::program_options::value<std::string>(&output_parameters.path), "Input file");
-//
-//    boost::program_options::positional_options_description pos_desc;
-//    pos_desc.add("file", 1);
-//
-//    boost::program_options::variables_map vm;
-//
-//    boost::program_options::command_line_parser parser{args, params};
-//    parser.options(desc).positional(pos_desc).allow_unregistered();
-//    boost::program_options::parsed_options parsed_options = parser.run();
-//    store(parsed_options, vm);
-//    notify(vm);
-//
-//    if(vm.count("help")) {
-//        output_parameters.help_mode = true;
-//    }
-//    if(vm.count("diversification")) {
-//        output_parameters.diversification = true;
-//    }
-//    if(vm.count("file")) {
-//        output_parameters.is_path_set = true;
-//    }
-//    if(vm.count("benchmark")) {
-//        output_parameters.benchmark_mode = true;
-//    }
-//    if(vm.count("mode")) {
-//        if(solving_mode == "brute")
-//            output_parameters.solving_mode = Reader::MODE::BRUTE_FORCE;
-//        else if(solving_mode == "bnb")
-//            output_parameters.solving_mode = Reader::MODE::BRANCH_AND_BOUND;
-//        else if(solving_mode == "dynamic")
-//            output_parameters.solving_mode = Reader::MODE::DYNAMIC;
-//        else if(solving_mode == "tabu")
-//            output_parameters.solving_mode = Reader::MODE::TABU;
-//        else if(solving_mode == "genetic")
-//            output_parameters.solving_mode = Reader::MODE::GENETIC;
-//        else
-//            throw std::logic_error("invalid solving mode!");
-//    }
-//    if(vm.count("output")) {
-//        if(output_mode == "file")
-//            output_parameters.file_mode = true;
-//        else if(output_mode == "console")
-//            output_parameters.file_mode = false;
-//        else
-//            throw std::logic_error("invalid output mode!");
-//    }
-//    return output_parameters;
-//}
-
-void process_input(int args, char* params[]) {
-	boost::program_options::options_description desc("Options");
-        desc.add_options()
-            ("help,h", "Print help messages");
-
-        boost::program_options::positional_options_description pos_desc;
-        pos_desc.add("file", 1);
-    
-        boost::program_options::variables_map vm;
-    
-        boost::program_options::command_line_parser parser{args, params};
-        parser.options(desc).positional(pos_desc).allow_unregistered();
-        boost::program_options::parsed_options parsed_options = parser.run();
-        store(parsed_options, vm);
-        notify(vm);
-}
-
-
 void generateBitmapImage(unsigned char* image, int height, int width, char* imageFileName);
 unsigned char* createBitmapFileHeader(int height, int width, int paddingSize);
 unsigned char* createBitmapInfoHeader(int height, int width);
-
-int main() {
-    try {
-
-        readFile("scene.txt");
-        // unsigned char image[height][width][bytesPerPixel];
-        char* imageFileName = "bitmapImage.bmp";
-
-        Display2();
-        generateBitmapImage((unsigned char*)image.data(), height, width, imageFileName);
-        printf("Image generated!!");
-        return 0;
-    } catch(std::exception& exception) {
-        std::cerr << "RayTracing app: " << exception.what() << std::endl;
-        return 1;
-    }
-}
 
 void generateBitmapImage(unsigned char* image, int height, int width, char* imageFileName) {
 
@@ -521,4 +381,59 @@ unsigned char* createBitmapInfoHeader(int height, int width) {
     infoHeader[14] = (unsigned char)(bytesPerPixel * 8);
 
     return infoHeader;
+}
+
+void print_help() {
+    std::cout << "\nRayTracing Application help:\n\n"
+              << "\n\t\t--in-progress--\n\n";
+}
+
+Parameters get_input_parameters(int args, char* params[]) {
+    Parameters parameters;
+
+    boost::program_options::options_description desc("Options");
+    desc.add_options()
+		("help,h", "Print help messages")("output,o", boost::program_options::value<std::string>(&parameters.output_file_name), "Output file")
+        ("input,i", boost::program_options::value<std::string>(&parameters.input_file_path), "Input file");
+
+    boost::program_options::positional_options_description pos_desc;
+    pos_desc.add("input", 1);
+
+    boost::program_options::variables_map vm;
+
+    boost::program_options::command_line_parser parser{args, params};
+    parser.options(desc).positional(pos_desc).allow_unregistered();
+    boost::program_options::parsed_options parsed_options = parser.run();
+    store(parsed_options, vm);
+    notify(vm);
+
+    if(vm.count("help")) {
+        parameters.help_mode = true;
+    }
+    if(vm.count("input")) {
+        parameters.is_input_set = true;
+    }
+    return parameters;
+}
+
+int main(int args, char* params[]) {
+    try {
+        auto parameters = get_input_parameters(args, params);
+        if(parameters.help_mode || !parameters.is_input_set) {
+            print_help();
+            return 0;
+        } else {
+            readFile(parameters.input_file_path);
+            // unsigned char image[height][width][bytesPerPixel];
+            char* imageFileName = "bitmapImage.bmp";
+
+            Display2();
+            generateBitmapImage((unsigned char*)image.data(), height, width, imageFileName);
+            printf("Image generated!!");
+            return 0;
+		}
+    } catch(std::exception& exception) {
+        std::cerr << "RayTracing app: " << exception.what() << std::endl;
+        return 1;
+    }
 }

@@ -1,5 +1,7 @@
 #pragma once
-#include <cstdint>
+//#include <cstdint>
+#include <cmath>
+#include <string>
 
 struct Color {
     double r, g, b;
@@ -32,4 +34,11 @@ struct LightSource {
     double IsR, IsG, IsB;
     double IdR, IdG, IdB;
     double IaR, IaG, IaB;
+};
+
+struct Parameters {
+    std::size_t x_input_file_resolution, y_input_file_resolution, ray_tracing_reflections;
+    std::string input_file_path, output_file_name;
+    bool help_mode = false;
+    bool is_input_set = false;
 };
