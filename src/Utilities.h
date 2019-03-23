@@ -1,7 +1,6 @@
 #pragma once
-//#include <cstdint>
-#include <cmath>
 #include <string>
+#include <vector>
 
 struct Color {
     double r, g, b;
@@ -37,8 +36,11 @@ struct LightSource {
 };
 
 struct Parameters {
-    std::size_t x_input_file_resolution, y_input_file_resolution, ray_tracing_reflections;
-    std::string input_file_path, output_file_name;
+    std::size_t x_input_file_resolution = 1920, y_input_file_resolution = 1080, ray_tracing_reflections = 10;
+    std::string input_file_path = "", output_file_name = "";
     bool help_mode = false;
     bool is_input_set = false;
 };
+
+using Pixel = std::array<unsigned char, 3u>;
+using Image = std::vector<std::vector<Pixel>>;

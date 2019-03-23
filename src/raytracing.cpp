@@ -8,7 +8,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <fstream>
-//#include "ArashPatrow/bitmap_image.hpp"
 #include "Utilities.h"
 
 const int bytesPerPixel = 3; /// red, green, blue
@@ -25,12 +24,9 @@ double dotProduct(const Point& p1, const Point& p2);
 Vector Normalization(const Point& p);
 Vector Reflect(const Point& p, const Point& q, const Vector& d, const Vector& n);
 Point viewer_v{0.0, 0.0, 1.0}; // wektor kierunku obserwacji
-int im_size_x = 1000;
-int im_size_y = 1000; // Nadpisywane wczytaniem z pliku
 
-const int height = 1000;
-const int width = 1000;
-std::array<std::array<std::array<unsigned char, bytesPerPixel>, width>, height> image;
+int height = 1000;
+int width = 1000;
 
 float viewport_size = 15.0;
 LightSource light_source{3.0, 2.5, 5.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
@@ -55,9 +51,9 @@ void readFile(const std::string& fileName) {
     std::string buffer = "";
     while(!file.eof()) {
         file >> buffer;
-        if(buffer == "dimensions") {
-            file >> im_size_x >> im_size_y;
-        }
+        // if(buffer == "dimensions") {
+        //    file >> height >> width;
+        //}
         if(buffer == "background") {
             file >> background.r >> background.g >> background.b;
         }
@@ -162,8 +158,8 @@ Color Trace2(Point p, Vector d, int step = 0) {
         return background;
     }
     if(data.first == 1) {
-        if(step > 0)
-            ;
+        //if(step > 0)
+        //    ;
         n = Normal(q, data.second);                   // obliczenie wektora normalnego w punkcie q
         r = Reflect(p, q, d, n);                      // obliczenie wektoru odbicia promienia w punkcie q
         local = Phong(p, q, n, d, data.second, step); // oblieczenie oœwietlenia lokalnego w punkcie q
@@ -253,13 +249,13 @@ double dotProduct(const Point& p1, const Point& p2) {
     return (p1.x * p2.x + p1.y * p2.y + p1.z * p2.z);
 }
 
-void Display2(void) {
+void Display2(Image& image) {
     int x, y;
     float x_fl, y_fl;
     int im_size_2_x;
     int im_size_2_y;
-    im_size_2_x = im_size_x / 2;
-    im_size_2_y = im_size_y / 2;
+    im_size_2_x = height / 2;
+    im_size_2_y = width / 2;
 
     Point starting_point2;
     Vector starting_directions2{0, 0, -1};
@@ -268,8 +264,8 @@ void Display2(void) {
     for(y = im_size_2_y; y > -im_size_2_y; y--) {
         for(x = -im_size_2_x; x < im_size_2_x; x++) {
             // std::cout << "X: " << x << "\t\tY: " << y << std::endl;
-            x_fl = static_cast<float>(x) / (im_size_x / viewport_size);
-            y_fl = static_cast<float>(y) / (im_size_y / viewport_size);
+            x_fl = static_cast<float>(x) / (height / viewport_size);
+            y_fl = static_cast<float>(y) / (width / viewport_size);
             // std::cout << "X: " << x_fl << "\t\tY: " << y_fl << std::endl;
 
             int skonwertowany_x, skonwertowany_y;
@@ -304,57 +300,29 @@ void Display2(void) {
     }
 }
 
-void generateBitmapImage(unsigned char* image, int height, int width, char* imageFileName);
-unsigned char* createBitmapFileHeader(int height, int width, int paddingSize);
-unsigned char* createBitmapInfoHeader(int height, int width);
-
-void generateBitmapImage(unsigned char* image, int height, int width, char* imageFileName) {
-
-    unsigned char padding[3] = {0, 0, 0};
-    int paddingSize = (4 - (width * bytesPerPixel) % 4) % 4;
-
-    unsigned char* fileHeader = createBitmapFileHeader(height, width, paddingSize);
-    unsigned char* infoHeader = createBitmapInfoHeader(height, width);
-
-    FILE* imageFile = fopen(imageFileName, "wb");
-
-    fwrite(fileHeader, 1, fileHeaderSize, imageFile);
-    fwrite(infoHeader, 1, infoHeaderSize, imageFile);
-
-    int i;
-    for(i = 0; i < height; i++) {
-        fwrite(image + (i * width * bytesPerPixel), bytesPerPixel, width, imageFile);
-        fwrite(padding, 1, paddingSize, imageFile);
-    }
-
-    fclose(imageFile);
-    // free(fileHeader);
-    // free(infoHeader);
-}
-
-unsigned char* createBitmapFileHeader(int height, int width, int paddingSize) {
+std::array<unsigned char, 14> createBitmapFileHeader(int height, int width, int paddingSize) {
     int fileSize = fileHeaderSize + infoHeaderSize + (bytesPerPixel * width + paddingSize) * height;
 
-    static unsigned char fileHeader[] = {
+    std::array<unsigned char, 14> file_header = {
         0, 0,       /// signature
         0, 0, 0, 0, /// image file size in bytes
         0, 0, 0, 0, /// reserved
         0, 0, 0, 0, /// start of pixel array
     };
 
-    fileHeader[0] = (unsigned char)('B');
-    fileHeader[1] = (unsigned char)('M');
-    fileHeader[2] = (unsigned char)(fileSize);
-    fileHeader[3] = (unsigned char)(fileSize >> 8);
-    fileHeader[4] = (unsigned char)(fileSize >> 16);
-    fileHeader[5] = (unsigned char)(fileSize >> 24);
-    fileHeader[10] = (unsigned char)(fileHeaderSize + infoHeaderSize);
+    file_header[0] = (unsigned char)('B');
+    file_header[1] = (unsigned char)('M');
+    file_header[2] = (unsigned char)(fileSize);
+    file_header[3] = (unsigned char)(fileSize >> 8);
+    file_header[4] = (unsigned char)(fileSize >> 16);
+    file_header[5] = (unsigned char)(fileSize >> 24);
+    file_header[10] = (unsigned char)(fileHeaderSize + infoHeaderSize);
 
-    return fileHeader;
+    return file_header;
 }
 
-unsigned char* createBitmapInfoHeader(int height, int width) {
-    static unsigned char infoHeader[] = {
+std::array<unsigned char, 40> createBitmapInfoHeader(int height, int width) {
+	std::array<unsigned char, 40> info_header = {
         0, 0, 0, 0, /// header size
         0, 0, 0, 0, /// image width
         0, 0, 0, 0, /// image height
@@ -368,19 +336,46 @@ unsigned char* createBitmapInfoHeader(int height, int width) {
         0, 0, 0, 0, /// important color count
     };
 
-    infoHeader[0] = (unsigned char)(infoHeaderSize);
-    infoHeader[4] = (unsigned char)(width);
-    infoHeader[5] = (unsigned char)(width >> 8);
-    infoHeader[6] = (unsigned char)(width >> 16);
-    infoHeader[7] = (unsigned char)(width >> 24);
-    infoHeader[8] = (unsigned char)(height);
-    infoHeader[9] = (unsigned char)(height >> 8);
-    infoHeader[10] = (unsigned char)(height >> 16);
-    infoHeader[11] = (unsigned char)(height >> 24);
-    infoHeader[12] = (unsigned char)(1);
-    infoHeader[14] = (unsigned char)(bytesPerPixel * 8);
+    info_header[0] = (unsigned char)(infoHeaderSize);
+    info_header[4] = (unsigned char)(width);
+    info_header[5] = (unsigned char)(width >> 8);
+    info_header[6] = (unsigned char)(width >> 16);
+    info_header[7] = (unsigned char)(width >> 24);
+    info_header[8] = (unsigned char)(height);
+    info_header[9] = (unsigned char)(height >> 8);
+    info_header[10] = (unsigned char)(height >> 16);
+    info_header[11] = (unsigned char)(height >> 24);
+    info_header[12] = (unsigned char)(1);
+    info_header[14] = (unsigned char)(bytesPerPixel * 8);
 
-    return infoHeader;
+    return info_header;
+}
+
+void generateBitmapImage(Image& image, int height, int width, std::string imageFileName) {
+
+    unsigned char padding[3] = {0, 0, 0};
+    int paddingSize = (4 - (width * bytesPerPixel) % 4) % 4;
+
+    std::array<unsigned char, 14> fileHeader = createBitmapFileHeader(height, width, paddingSize);
+    std::array<unsigned char, 40> infoHeader = createBitmapInfoHeader(height, width);
+
+    FILE* imageFile = fopen(imageFileName.data(), "wb");
+
+    fwrite(fileHeader.data(), 1, fileHeaderSize, imageFile);
+    fwrite(infoHeader.data(), 1, infoHeaderSize, imageFile);
+
+    for(int i = 0; i < height; i++) {
+        for(int j = 0; j < width; j++) {
+            fwrite(image[i][j].data(), bytesPerPixel, 1, imageFile);
+        }
+        fwrite(padding, 1, paddingSize, imageFile);
+    }
+
+    fclose(imageFile);
+
+    // std::ofstream output_file(imageFileName);
+    // output_file <<
+    // KIEDYŚ
 }
 
 void print_help() {
@@ -388,14 +383,25 @@ void print_help() {
               << "\n\t\t--in-progress--\n\n";
 }
 
+std::string extract_name(const std::string& path) {
+    std::size_t begin = path.rfind('\\');
+    std::size_t end = path.find(".txt");
+
+    return path.substr(begin + 1, end - begin - 1);
+}
+
 Parameters get_input_parameters(int args, char* params[]) {
     Parameters parameters;
-
+    // clang-format off
     boost::program_options::options_description desc("Options");
     desc.add_options()
-		("help,h", "Print help messages")("output,o", boost::program_options::value<std::string>(&parameters.output_file_name), "Output file")
-        ("input,i", boost::program_options::value<std::string>(&parameters.input_file_path), "Input file");
-
+        ("help,h", "Print help messages")
+        ("x_resolution,x", boost::program_options::value<std::size_t>(&parameters.x_input_file_resolution), "X resolution of output file, default 1920p")
+        ("y_resolution,y", boost::program_options::value<std::size_t>(&parameters.y_input_file_resolution), "Y resolution of output file, default 1080p")
+        ("reflections,r", boost::program_options::value<std::size_t>(&parameters.ray_tracing_reflections), "Amount of reflections to calculete for each ray")
+        ("input,i", boost::program_options::value<std::string>(&parameters.input_file_path), "Input file")
+        ("output,o", boost::program_options::value<std::string>(&parameters.output_file_name), "Output file, default the same name as input");
+    // clang-format on
     boost::program_options::positional_options_description pos_desc;
     pos_desc.add("input", 1);
 
@@ -413,6 +419,9 @@ Parameters get_input_parameters(int args, char* params[]) {
     if(vm.count("input")) {
         parameters.is_input_set = true;
     }
+    if(vm.count("input") && !vm.count("output")) {
+        parameters.output_file_name = extract_name(parameters.input_file_path) + ".bmp";
+	}
     return parameters;
 }
 
@@ -424,14 +433,16 @@ int main(int args, char* params[]) {
             return 0;
         } else {
             readFile(parameters.input_file_path);
-            // unsigned char image[height][width][bytesPerPixel];
-            char* imageFileName = "bitmapImage.bmp";
+            Image image;
+            image.resize(parameters.x_input_file_resolution);
+            for(auto& x : image)
+                x.resize(parameters.y_input_file_resolution);
 
-            Display2();
-            generateBitmapImage((unsigned char*)image.data(), height, width, imageFileName);
+			Display2(image);
+            generateBitmapImage(image, height, width, parameters.output_file_name);
             printf("Image generated!!");
             return 0;
-		}
+        }
     } catch(std::exception& exception) {
         std::cerr << "RayTracing app: " << exception.what() << std::endl;
         return 1;
