@@ -1,35 +1,16 @@
 ﻿#include <iostream>
-#include <algorithm>
-#include <vector>
-#include <string>
 #include <boost/program_options.hpp>
-//#include <boost/filesystem.hpp>
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
 #include <fstream>
 #include "Utilities.h"
 
 using Vector = Point;
-typedef float point[3];
 
-// To get rid off
-const int bytesPerPixel = 3; /// red, green, blue
-const int fileHeaderSize = 14;
-const int infoHeaderSize = 40;
+constexpr int bytesPerPixel = 3; /// red, green, blue
+constexpr int fileHeaderSize = 14;
+constexpr int infoHeaderSize = 40;
 
-//int height = 1000;
-//int width = 1000;
-
-LightSource light_source{3.0, 2.5, 5.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
-Sphere sphere{1.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.6, 0.7, 0.8, 1.0, 1.0, 1.0, 30.0};
+// Globals			// TO DO: GET RID OF THIS
 Color global;
-float starting_point[3];
-float starting_directions[] = {0.0, 0.0, -1.0};
-float inter[3];
-int inters;
-float inters_c[3];
-unsigned char pixel[1][1][3];
 std::vector<Sphere> spheres;
 std::vector<LightSource> lights;
 Color background;
@@ -41,21 +22,16 @@ Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, co
 double dotProduct(const Point& p1, const Point& p2);
 
 // Constants
-float viewport_size = 15.0;
-const int MAX_STEPS = 3;
-Point viewer_v{0.0, 0.0, 1.0}; // wektor kierunku obserwacji
+constexpr float viewport_size = 15.0;
+constexpr int MAX_STEPS = 10;
 
-
-
-void readFile(const std::string& fileName) {
+void read_file(const std::string& fileName) {
     std::ifstream file;
     file.open(fileName);
     std::string buffer = "";
     while(!file.eof()) {
         file >> buffer;
-        // if(buffer == "dimensions") {
-        //    file >> height >> width;
-        //}
+
         if(buffer == "background") {
             file >> background.r >> background.g >> background.b;
         }
@@ -65,7 +41,7 @@ void readFile(const std::string& fileName) {
         if(buffer == "sphere") {
             Sphere newSphere{};
             file >> newSphere.r;
-            file >> newSphere.x0 >> newSphere.y0 >> newSphere.z0;
+            file >> newSphere.y0 >> newSphere.x0 >> newSphere.z0;
             file >> newSphere.KsR >> newSphere.KsG >> newSphere.KsB; // specular
             file >> newSphere.KdR >> newSphere.KdG >> newSphere.KdB; // diffuse
             file >> newSphere.KaR >> newSphere.KaG >> newSphere.KaB; // ambient
@@ -110,27 +86,26 @@ Point Intersect(const Point& p, const Vector& v, std::pair<int, unsigned int>& s
                 (p.z - spheres[i].z0) * (p.z - spheres[i].z0) - spheres[i].r * spheres[i].r;
 
             d = b * b - 4 * a * c;
-            if(d >= 0) // jest co najmniej jeden punkt przeciêcia
+            if(d >= 0) // jest co najmniej jeden punkt przecięcia
             {
-                r = (-b - sqrt(d)) / (2 * a); // parametr dla bli¿szego punktu przeciêcia
+                r = (-b - sqrt(d)) / (2 * a); // parametr dla bliższego punktu przecięcia
                 if(r > 0 && r < lenght) {
-                    intersection.x = p.x + r * v.x; // wspó³rzêdne punktu przeciêcia
+                    intersection.x = p.x + r * v.x; // współrzędne punktu przecięcia
                     intersection.y = p.y + r * v.y;
                     intersection.z = p.z + r * v.z;
                     lenght = sqrt(pow(intersection.x - p.x, 2.0) + pow(intersection.y - p.y, 2.0) + pow(intersection.z - p.z, 2.0));
 
                     status.first = 1;
                     status.second = i;
-                    // jest punkt przeciêcia
+                    // jest punkt przecięcia
                 }
             }
         }
     }
     if(status.first) {
-        // std::cout << "\nX: " << intersection.x << "\tY: " << intersection.y << "\tZ: " << intersection.z;
         return intersection;
     }
-    // promieñ nie przecina sfery
+    // promień nie przecina sfery
     status.first = 0;
     status.second = 0;
     return intersection;
@@ -144,18 +119,17 @@ Vector Normal(const Point& q, unsigned int i) {
     return Vector{x, y, z};
 }
 
-Color Trace2(Point p, Vector d, int step = 0) {
-    std::pair<int, unsigned int> data{0, 0}; // first - rodzaj outputu (0 - nic, 1 - sfera, 2 - œwiat³o); second - index
-    // auto& status = data.first;
-    if(step > MAX_STEPS) // przeanalizowano ju¿ zadan¹ liczbê poziomów drzewa
-        // return background;
+Color Trace(Point p, Vector d, int step = 0) {
+    std::pair<int, unsigned int> data{0, 0}; // first - rodzaj outputu (0 - nic, 1 - sfera, 2 - światło); second - index
+    if(step > MAX_STEPS) // przeanalizowano już zadaną liczbę poziomów drzewa
+	    //return background;
         return Color{0, 0, 0};
 
-    Color local, reflected;          // sk³adowe koloru
-    Point q;                         // wspó³rzêdne punktu
-    Vector n, r;                     // wspó³rzêdne wektora
-    q = Intersect(p, d, data);       // obliczenie pubnktu przeciêcia promienia i obiektu sceny
-    if(data.first == 0 && step == 0) // nic nie zosta³o trafione
+    Color local, reflected;          // składowe koloru
+    Point q;                         // współrzędne punktu
+    Vector n, r;                     // współrzędne wektora
+    q = Intersect(p, d, data);       // obliczenie pubnktu przecięcia promienia i obiektu sceny
+    if(data.first == 0 && step == 0) // nic nie zostało trafione
     {
         return background;
     }
@@ -164,12 +138,12 @@ Color Trace2(Point p, Vector d, int step = 0) {
         //    ;
         n = Normal(q, data.second);                   // obliczenie wektora normalnego w punkcie q
         r = Reflect(p, q, d, n);                      // obliczenie wektoru odbicia promienia w punkcie q
-        local = Phong(p, q, n, d, data.second, step); // oblieczenie oœwietlenia lokalnego w punkcie q
-        reflected = Trace2(q, r, step + 1);           // obliczenie "reszty" oœwietlenia dla punktu q
-        return (local + reflected);                   // obliczenie ca³kowitego oœwietlenia dla q
+        local = Phong(p, q, n, d, data.second, step); // oblieczenie oświetlenia lokalnego w punkcie q
+        reflected = Trace(q, r, step + 1);           // obliczenie "reszty" oświetlenia dla punktu q
+        return (local + reflected);                   // obliczenie całkowitego oświetlenia dla q
     }
     return Color{0, 0, 0};
-    // return background;
+    //return background;
 }
 
 Vector Reflect(const Point& p, const Point& q, const Vector& d, const Vector& n) {
@@ -194,7 +168,7 @@ Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, co
     ref = Normalization(ref);
 
     const double a = 1, b = 0.01, c = 0.001;
-    // sprawdzenie czy punkt na powierzchni sfery jest oœwietlany przez Ÿród³o
+    // sprawdzenie czy punkt na powierzchni sfery jest oświetlany przez źródło
     for(auto i = 0u; i < lights.size(); i++) {
         Vector light_vector{lights[i].xs - q.x, lights[i].ys - q.y, lights[i].zs - q.z};
         const double d2 = sqrt(dotProduct(light_vector, light_vector));
@@ -205,10 +179,10 @@ Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, co
         reflection_vector = Normalization(reflection_vector);
 
         double v_dot_r = dotProduct(reflection_vector, ref);
-        if(v_dot_r < 0) // obserwator nie widzi oœwietlanego punktu
+        if(v_dot_r < 0) // obserwator nie widzi oświetlanego punktu
             v_dot_r = 0;
 
-        if(n_dot_l > 0) // punkt jest oœwietlany, oœwietlenie wyliczane jest ze wzorów dla modelu Phonga
+        if(n_dot_l > 0) // punkt jest oświetlany, oświetlenie wyliczane jest ze wzorów dla modelu Phonga
         {
             x = x +
                 (spheres[index].KdR * lights[i].IdR * n_dot_l + spheres[index].KsR * lights[i].IsR * pow(double(v_dot_r), spheres[index].n)) *
@@ -223,7 +197,7 @@ Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, co
                     (1.00 / (a + b * d2 + c * d2 * d2)) +
                 spheres[index].KaB * lights[i].IaB;
         }
-        // punkt nie jest oœwietlany, uwzglêdniane jest tylko œwiat³o rozproszone
+        // punkt nie jest oświetlany, uwzględniane jest tylko światło rozproszone
         x = x + spheres[index].KaR * global.r;
         y = y + spheres[index].KaG * global.g;
         z = z + spheres[index].KaB * global.b;
@@ -234,7 +208,6 @@ Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, co
 Vector Normalization(const Point& p) {
     double x = 0, y = 0, z = 0;
     auto d = 0.0;
-    // d = p.x * p.x + p.y * p.y + p.z * p.z;
     d = dotProduct(p, p);
     d = sqrt(d);
     if(d > 0.0) {
@@ -259,25 +232,26 @@ void Display2(Image& image) {
     im_size_2_x = image.size() / 2;
     im_size_2_y = image[0].size() / 2;
 
-    Point starting_point2;
-    Vector starting_directions2{0, 0, -1};
+	unsigned char pixel[1][1][3];
+    Point starting_point;
+    Vector starting_directions{0, 0, -1};
     Color pixel_to_paint;
 
-    for(y = im_size_2_y; y > -im_size_2_y; y--) {
+    for(y = -im_size_2_y; y < im_size_2_y; y++) {
         for(x = -im_size_2_x; x < im_size_2_x; x++) {
-            // std::cout << "X: " << x << "\t\tY: " << y << std::endl;
-            x_fl = static_cast<float>(x) / (image.size() / viewport_size);
-            y_fl = static_cast<float>(y) / (image[0].size() / viewport_size);
-            // std::cout << "X: " << x_fl << "\t\tY: " << y_fl << std::endl;
+            std::size_t smaller_edge = std::min(image.size(), image[0].size());
+			
+            x_fl = static_cast<float>(x) / (smaller_edge / viewport_size);
+            y_fl = static_cast<float>(y) / (smaller_edge / viewport_size);
 
             int skonwertowany_x, skonwertowany_y;
-            starting_point2.x = x_fl;
-            starting_point2.y = y_fl;
-            starting_point2.z = viewport_size;
-            pixel_to_paint = Trace2(starting_point2, starting_directions2);
+            starting_point.x = x_fl;
+            starting_point.y = y_fl;
+            starting_point.z = viewport_size;
+            pixel_to_paint = Trace(starting_point, starting_directions);
 
-            skonwertowany_x = x + im_size_2_x;
-            skonwertowany_y = y + im_size_2_y - 1;
+            skonwertowany_x = x + im_size_2_x /*- 1*/;
+            skonwertowany_y = y + im_size_2_y /*- 1*/;
 
             if(pixel_to_paint.r > 1)
                 pixel[0][0][0] = 255;
@@ -294,7 +268,7 @@ void Display2(Image& image) {
             else
                 pixel[0][0][2] = static_cast<unsigned char>(pixel_to_paint.b * 255.00L);
 
-            // BO BMP JEST ZJEBANE I ZAPISUJE NA ODWRÓT
+            // BO BMP JEST DZIKIE I ZAPISUJE NA ODWRÓT
             image[skonwertowany_x][skonwertowany_y][0] = pixel[0][0][2];
             image[skonwertowany_x][skonwertowany_y][1] = pixel[0][0][1];
             image[skonwertowany_x][skonwertowany_y][2] = pixel[0][0][0];
@@ -368,7 +342,7 @@ void generateBitmapImage(Image& image, int height, int width, std::string imageF
 
     for(int i = 0; i < height; i++) {
         for(int j = 0; j < width; j++) {
-            fwrite(image[i][j].data(), bytesPerPixel, 1, imageFile);
+            fwrite(image[height - i - 1][width - j - 1].data(), bytesPerPixel, 1, imageFile);
         }
         fwrite(padding, 1, paddingSize, imageFile);
     }
@@ -434,14 +408,14 @@ int main(int args, char* params[]) {
             print_help();
             return 0;
         } else {
-            readFile(parameters.input_file_path);
+            read_file(parameters.input_file_path);
             Image image;
-            image.resize(parameters.x_input_file_resolution);
+            image.resize(parameters.y_input_file_resolution);
             for(auto& x : image)
-                x.resize(parameters.y_input_file_resolution);
+                x.resize(parameters.x_input_file_resolution);
 
 			Display2(image);
-            generateBitmapImage(image, parameters.x_input_file_resolution, parameters.y_input_file_resolution, parameters.output_file_name);
+            generateBitmapImage(image, parameters.y_input_file_resolution, parameters.x_input_file_resolution, parameters.output_file_name);
             printf("Image generated!!");
             return 0;
         }
