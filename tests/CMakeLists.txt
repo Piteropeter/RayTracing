@@ -6,7 +6,7 @@ message(STATUS "Configuring ${APPLICATION_NAME}")
 
 enable_testing()
 find_package(gtest REQUIRED)
-FIND_PACKAGE(Boost 1.68 COMPONENTS program_options filesystem REQUIRED)
+FIND_PACKAGE(Boost 1.65 COMPONENTS program_options filesystem REQUIRED)
 include_directories(${GTEST_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src)
