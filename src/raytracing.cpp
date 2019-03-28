@@ -3,32 +3,24 @@
 #include <vector>
 #include <string>
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
 #include <fstream>
 #include "Utilities.h"
 
+using Vector = Point;
+typedef float point[3];
+
+// To get rid off
 const int bytesPerPixel = 3; /// red, green, blue
 const int fileHeaderSize = 14;
 const int infoHeaderSize = 40;
 
-typedef float point[3];
-using Vector = Point;
+//int height = 1000;
+//int width = 1000;
 
-Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, const int& index, const int step);
-
-double dotProduct(const Point& p1, const Point& p2);
-
-Vector Normalization(const Point& p);
-Vector Reflect(const Point& p, const Point& q, const Vector& d, const Vector& n);
-Point viewer_v{0.0, 0.0, 1.0}; // wektor kierunku obserwacji
-
-int height = 1000;
-int width = 1000;
-
-float viewport_size = 15.0;
 LightSource light_source{3.0, 2.5, 5.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
 Sphere sphere{1.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.6, 0.7, 0.8, 1.0, 1.0, 1.0, 30.0};
 Color global;
@@ -38,12 +30,22 @@ float inter[3];
 int inters;
 float inters_c[3];
 unsigned char pixel[1][1][3];
-
-const int MAX_STEPS = 3;
-
 std::vector<Sphere> spheres;
 std::vector<LightSource> lights;
 Color background;
+
+// Declarations
+Vector Normalization(const Point& p);
+Vector Reflect(const Point& p, const Point& q, const Vector& d, const Vector& n);
+Color Phong(const Point& p, const Point& q, const Vector& n, const Vector& d, const int& index, const int step);
+double dotProduct(const Point& p1, const Point& p2);
+
+// Constants
+float viewport_size = 15.0;
+const int MAX_STEPS = 3;
+Point viewer_v{0.0, 0.0, 1.0}; // wektor kierunku obserwacji
+
+
 
 void readFile(const std::string& fileName) {
     std::ifstream file;
@@ -254,8 +256,8 @@ void Display2(Image& image) {
     float x_fl, y_fl;
     int im_size_2_x;
     int im_size_2_y;
-    im_size_2_x = height / 2;
-    im_size_2_y = width / 2;
+    im_size_2_x = image.size() / 2;
+    im_size_2_y = image[0].size() / 2;
 
     Point starting_point2;
     Vector starting_directions2{0, 0, -1};
@@ -264,8 +266,8 @@ void Display2(Image& image) {
     for(y = im_size_2_y; y > -im_size_2_y; y--) {
         for(x = -im_size_2_x; x < im_size_2_x; x++) {
             // std::cout << "X: " << x << "\t\tY: " << y << std::endl;
-            x_fl = static_cast<float>(x) / (height / viewport_size);
-            y_fl = static_cast<float>(y) / (width / viewport_size);
+            x_fl = static_cast<float>(x) / (image.size() / viewport_size);
+            y_fl = static_cast<float>(y) / (image[0].size() / viewport_size);
             // std::cout << "X: " << x_fl << "\t\tY: " << y_fl << std::endl;
 
             int skonwertowany_x, skonwertowany_y;
@@ -280,17 +282,17 @@ void Display2(Image& image) {
             if(pixel_to_paint.r > 1)
                 pixel[0][0][0] = 255;
             else
-                pixel[0][0][0] = pixel_to_paint.r * 255;
+                pixel[0][0][0] = static_cast<unsigned char>(pixel_to_paint.r * 255.00L);
 
             if(pixel_to_paint.g > 1)
                 pixel[0][0][1] = 255;
             else
-                pixel[0][0][1] = pixel_to_paint.g * 255;
+                pixel[0][0][1] = static_cast<unsigned char>(pixel_to_paint.g * 255.00L);
 
             if(pixel_to_paint.b > 1)
                 pixel[0][0][2] = 255;
             else
-                pixel[0][0][2] = pixel_to_paint.b * 255;
+                pixel[0][0][2] = static_cast<unsigned char>(pixel_to_paint.b * 255.00L);
 
             // BO BMP JEST ZJEBANE I ZAPISUJE NA ODWRÓT
             image[skonwertowany_x][skonwertowany_y][0] = pixel[0][0][2];
@@ -439,7 +441,7 @@ int main(int args, char* params[]) {
                 x.resize(parameters.y_input_file_resolution);
 
 			Display2(image);
-            generateBitmapImage(image, height, width, parameters.output_file_name);
+            generateBitmapImage(image, parameters.x_input_file_resolution, parameters.y_input_file_resolution, parameters.output_file_name);
             printf("Image generated!!");
             return 0;
         }
