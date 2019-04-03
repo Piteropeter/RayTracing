@@ -416,7 +416,7 @@ int main(int args, char* params[]) {
 
 			Display2(image);
             generateBitmapImage(image, parameters.y_input_file_resolution, parameters.x_input_file_resolution, parameters.output_file_name);
-            printf("Image generated!!");
+            printf("Image generated!\n");
             return 0;
         }
     } catch(std::exception& exception) {
