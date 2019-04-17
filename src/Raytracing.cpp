@@ -356,7 +356,15 @@ void generateBitmapImage(Image& image, int height, int width, std::string imageF
 
 void print_help() {
     std::cout << "\nRayTracing Application help:\n\n"
-              << "\n\t\t--in-progress--\n\n";
+              << "Synopsis:\n"
+              << "\traytracing [OPTIONS]... [INPUT_FILE]\n\n"
+              << "Description:\n"
+              << "\t-h, --help\n\t\thelp screen\n"
+              << "\t-x [SIZE], --x_resolution [SIZE]\n\t\twidth of generated image\n"
+              << "\t-y [SIZE], --y_resolution [SIZE]\n\t\theight of generated image\n"
+              << "\t-r [AMOUNT], --reflections [AMOUNT]\n\t\tnumber of reflections for single ray\n"
+              << "\t-i [NAME], --input [NAME]\n\t\tpath of input file\n"
+              << "\t-o [NAME], --output [NAME]\n\t\tname for generated file\n";
 }
 
 std::string extract_name(const std::string& path) {
