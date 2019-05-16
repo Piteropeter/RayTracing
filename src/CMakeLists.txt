@@ -3,7 +3,7 @@
 set(APPLICATION_NAME Raytracing)
 
 message(STATUS "Configuring ${APPLICATION_NAME}")
-
+set(Boost_USE_STATIC_LIBS ON)
 find_package( Boost 1.65 COMPONENTS program_options filesystem REQUIRED )
 include_directories( ${Boost_INCLUDE_DIR} )
 add_executable (${APPLICATION_NAME} "Raytracing.cpp" "Utilities.h" "Utilities.cpp")
