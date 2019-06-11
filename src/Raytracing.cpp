@@ -119,7 +119,7 @@ Vector Normal(const Point& q, unsigned int i) {
     return Vector{x, y, z};
 }
 
-Color Trace(Point p, Vector d, int step = 0) {
+Color Trace(Point p, Vector d, std::size_t reflections, std::size_t step = 0) {
     std::pair<int, unsigned int> data{0, 0}; // first - rodzaj outputu (0 - nic, 1 - sfera, 2 - światło); second - index
     if(step > MAX_STEPS) // przeanalizowano już zadaną liczbę poziomów drzewa
 	    //return background;
@@ -139,7 +139,7 @@ Color Trace(Point p, Vector d, int step = 0) {
         n = Normal(q, data.second);                   // obliczenie wektora normalnego w punkcie q
         r = Reflect(p, q, d, n);                      // obliczenie wektoru odbicia promienia w punkcie q
         local = Phong(p, q, n, d, data.second, step); // oblieczenie oświetlenia lokalnego w punkcie q
-        reflected = Trace(q, r, step + 1);           // obliczenie "reszty" oświetlenia dla punktu q
+        reflected = Trace(q, r, reflections, step + 1);           // obliczenie "reszty" oświetlenia dla punktu q
         return (local + reflected);                   // obliczenie całkowitego oświetlenia dla q
     }
     return Color{0, 0, 0};
@@ -224,7 +224,7 @@ double dotProduct(const Point& p1, const Point& p2) {
     return (p1.x * p2.x + p1.y * p2.y + p1.z * p2.z);
 }
 
-void Display2(Image& image) {
+void Display(Image& image, std::size_t reflections) {
     int x, y;
     float x_fl, y_fl;
     int im_size_2_x;
@@ -248,7 +248,7 @@ void Display2(Image& image) {
             starting_point.x = x_fl;
             starting_point.y = y_fl;
             starting_point.z = viewport_size;
-            pixel_to_paint = Trace(starting_point, starting_directions);
+            pixel_to_paint = Trace(starting_point, starting_directions, reflections);
 
             skonwertowany_x = x + im_size_2_x /*- 1*/;
             skonwertowany_y = y + im_size_2_y /*- 1*/;
@@ -422,7 +422,7 @@ int main(int args, char* params[]) {
             for(auto& x : image)
                 x.resize(parameters.x_input_file_resolution);
 
-			Display2(image);
+			Display(image, parameters.ray_tracing_reflections);
             generateBitmapImage(image, parameters.y_input_file_resolution, parameters.x_input_file_resolution, parameters.output_file_name);
             printf("Image generated!\n");
             return 0;
