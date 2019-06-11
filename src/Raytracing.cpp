@@ -121,7 +121,7 @@ Vector Normal(const Point& q, unsigned int i) {
 
 Color Trace(Point p, Vector d, std::size_t reflections, std::size_t step = 0) {
     std::pair<int, unsigned int> data{0, 0}; // first - rodzaj outputu (0 - nic, 1 - sfera, 2 - światło); second - index
-    if(step > MAX_STEPS) // przeanalizowano już zadaną liczbę poziomów drzewa
+    if(step > reflections) // przeanalizowano już zadaną liczbę poziomów drzewa
 	    //return background;
         return Color{0, 0, 0};
 
